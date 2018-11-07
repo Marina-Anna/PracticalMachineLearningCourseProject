@@ -1,0 +1,106 @@
+---
+title       : Learn about Chocolate!
+subtitle    : Chocolate consumption and production
+author      : Marina.K
+job         : Individual leraner
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [bootstrap, quiz, shiny, interactive, ggplot2]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+
+--- &radio
+
+## Answer the Quiz!
+
+Which country has largest chocolate consumption?
+
+1. UK
+2. France
+3. _Germany_
+4. USA
+
+*** .hint
+Beer and wienerwurst!
+
+*** .explanation
+Aren't you surprised?:)
+
+---
+
+## Chocolate Consumption by Country
+
+Top 3 countries are in Europe.
+
+```{r echo=FALSE, results='asis'}
+require(rCharts)
+Choco <- read.csv("hw1_data.csv", header = T)
+n1 <- barplot(Choco$Consumption, names.arg = Choco$Country, xlab = "Country name", ylab = "Consumption of Chocolate")
+```
+
+--- &radio
+
+## Answer the Quiz!
+
+Which is the following is the biggest factor of chocolate evaluation?
+
+1. Size of bean
+2. _Percentage of cocoa_ 
+3. Producer
+4. No idea
+
+*** .hint
+Bitter is better.
+
+*** .explanation
+I don't think so, but fact said like that.
+
+---
+## Relationship between Percentage of cacao and its Evaluations
+Please choose "Country", "Bean type" and "Cocoa percentage".
+Note: If you can't see plot because of your operating environment, you can use it in a browser here[].
+```{r echo=FALSE, results='asis'}
+library(shiny)
+library(ggplot2)
+library(dplyr)
+library(webshot)
+
+cacao1 <- read.csv("flavors_of_cacao.csv", stringsAsFactors = FALSE)
+ui <- fluidPage(
+    titlePanel("Relationship between Percentage of coco & its Evaluation"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("cocoInput", "CocoaPercent", 0, 1, c(0.4, 0.8)),
+            radioButtons("typeInput", "BeanType",
+                         choices = c("Blend", "Fresh"),
+                         selected = "Fresh"),
+            selectInput("countryInput", "Country",
+                        choices = c("Germany", "France", "Japan"))
+        ),
+        mainPanel(
+            plotOutput("plot1"),
+            br(), br(),
+            tableOutput("results")
+        )
+    )
+)
+
+server <- function(input, output) {
+    output$plot1 <- renderPlot({
+        filtered <-
+            cacao1 %>%
+            filter(CocoaPercent >= input$cocoInput[1],
+                   CocoaPercent <= input$cocoInput[2],
+                   BeanType == input$typeInput,
+                   Country == input$countryInput
+            )
+        ggplot(filtered, aes(CocoaPercent)) +
+            geom_histogram()
+        ggplotly(G)
+    })
+}
+
+shinyApp(ui = ui, server = server)
+```
+publish_github(Marina-Anna,PracticalMachineLearningCourseProject)
